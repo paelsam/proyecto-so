@@ -70,42 +70,32 @@ def insertar_comando(comando: str, tiempo_inicio: int, tiempo_fin: int):
     try:
         # verificar si el comando ya existe en la base de datos
         if comando_existe(comando.strip()):
-            (comando_id, comando_str, contenedor_id, contenedor_str) = get_comando(
-                comando
-            )
+            (comando_id, comando_str, _, contenedor_str) = get_comando(comando)
             create_container(contenedor_str, comando_str)
-            (comando_id, contenedor_id, registro_tiempo_id) = insert_comando_existente(
-                comando, tiempo_inicio, tiempo_fin
-            )
-            comandos_a_ejecutar.append(
-                (
+            (comando_id, _, registro_tiempo_id) = insert_comando_existente(comando, tiempo_inicio, tiempo_fin)
+            comandos_a_ejecutar.append((
                     comando_id,
                     comando_str,
                     contenedor_str,
                     tiempo_inicio,
                     tiempo_fin,
                     registro_tiempo_id,
-                )
-            )
+                ))
         else:
             contenedor: str = comando.replace(" ", "_")
             contenedor = re.sub(
                 r"[^a-zA-Z0-9_]+", "_", contenedor
-            ) + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            ) + '_' + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             create_container(contenedor, comando)
-            (comando_id, contenedor_id, registro_tiempo_id) = insert_comando(
-                comando, contenedor, tiempo_inicio, tiempo_fin
-            )
-            comandos_a_ejecutar.append(
-                (
+            (comando_id, _, registro_tiempo_id) = insert_comando(comando, contenedor, tiempo_inicio, tiempo_fin)
+            comandos_a_ejecutar.append((
                     comando_id,
                     comando.strip(),
                     contenedor,
                     tiempo_inicio,
                     tiempo_fin,
                     registro_tiempo_id,
-                )
-            )
+                ))
     except Exception as e:
         print(e)
 
@@ -120,14 +110,7 @@ def fcfs(comandos: list):
     tiempos = []
 
     for comando in comandos:
-        (
-            comando_id,
-            comando_str,
-            contenedor,
-            tiempo_inicio,
-            tiempo_fin,
-            registro_tiempo_id,
-        ) = comando
+        ( comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id ) = comando
 
         if tiempo_actual < tiempo_inicio:
             time.sleep(tiempo_inicio - tiempo_actual)
@@ -371,7 +354,71 @@ def srt(comandos: list):
     print(f"Response time promedio: {avg_response_time}")
     
     return avg_turnaround_time, avg_response_time
+
+# Algoritmo de planificación Highest Response Ratio Next (HRRN)
+def hrrn(comandos: list):
+    tiempo_actual = 0
+    tiempos = []
+    cola = []
     
+    # Ordenamos los comandos por tiempo de inicio
+    comandos = sorted(comandos, key=lambda x: x[3])
+    
+    while comandos or cola:
+        # Agregamos a la cola los comandos que ya pueden comenzar
+        while comandos and comandos[0][3] <= tiempo_actual:
+            comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id = comandos.pop(0)
+            cola.append([comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id])
+        
+        if not cola:
+            # Si no hay comandos en la cola, avanzamos el tiempo
+            tiempo_actual = comandos[0][3]
+            continue
+        
+        # Calculamos el response ratio para cada comando en la cola
+        for i, comando in enumerate(cola):
+            tiempo_espera = tiempo_actual - comando[3]
+            tiempo_estimado = comando[4] # tiempo_fin
+            response_ratio = (tiempo_espera + tiempo_estimado) / tiempo_estimado
+            # Si el response ratio ya existe en la cola, actualizamos su valor
+            if len(cola[i]) < 7:
+                cola[i].append(response_ratio)
+            else:
+                cola[i][6] = response_ratio
+        
+        # Seleccionamos el proceso con el mayor response ratio
+        cola.sort(key=lambda x: x[6], reverse=True)
+        comando = cola.pop(0)
+        
+        comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id, _ = comando
+        
+        print(f"Comando {comando_id}: {comando_str}")
+        
+        start_container(contenedor)
+        
+        tiempo_ejecucion = tiempo_fin
+        time.sleep(tiempo_ejecucion)
+        tiempo_actual += tiempo_ejecucion
+        
+        stop_container(contenedor)
+        
+        turnaround_time = tiempo_actual - tiempo_inicio
+        response_time = turnaround_time - tiempo_fin
+        
+        tiempos.append((registro_tiempo_id, turnaround_time, response_time))
+        
+        print(f"Turnaround time: {turnaround_time}")
+        print(f"Response time: {response_time}")
+    
+    intert_turnaround_time_and_response_time(tiempos)
+    
+    avg_turnaround_time = sum(t[1] for t in tiempos) / len(tiempos)
+    avg_response_time = sum(t[2] for t in tiempos) / len(tiempos)
+    
+    print(f"Turnaround time promedio: {avg_turnaround_time}")
+    print(f"Response time promedio: {avg_response_time}")
+    
+    return avg_turnaround_time, avg_response_time
 
 # Comandos de prueba
 insertar_comando("ps ef", 0, 1)
@@ -381,5 +428,6 @@ insertar_comando("ls -l", 5, 1)
 # print(fcfs(comandos_a_ejecutar))
 # print(round_robin(comandos_a_ejecutar, 2))
 # print(spn(comandos_a_ejecutar))
-print(srt(comandos_a_ejecutar))
+# print(srt(comandos_a_ejecutar))
+print(hrrn(comandos_a_ejecutar))
 
