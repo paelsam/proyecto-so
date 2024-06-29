@@ -3,7 +3,7 @@
 Proyecto de sistemas operativos que simula el funcionamiento de un planificador de procesos en un sistema operativo.
 Teniendo como procesos contenedores de docker que se ejecutan en un sistema operativo linux (alpine linux por defecto).
 
-El proyecto se desarrolla en python y se utiliza la librería PySimpleGUI para la interfaz gráfica y psycopg2 para la conexión a la base de datos (PostgreSQL
+El proyecto se desarrolla en python y se utiliza la librería PySimpleGUI para la interfaz gráfica y psycopg2 para la conexión a la base de datos (PostgreSQL)
 
 ## Integrantes
 - Elkin Samir Angulo Panameño
