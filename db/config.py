@@ -1,13 +1,15 @@
 import psycopg2
-# import datetime
 
-conn = psycopg2.connect(
-    database="postgres",
-    user="postgres",
-    password="myStrong#Password",
-    host="localhost",
-    port="5432",
-)
+try:
+    conn = psycopg2.connect(
+        database="postgres",
+        user="postgres",
+        password="myStrong#Password",
+        host="localhost",
+        port="5432",
+    )
+except (Exception, psycopg2.Error):
+    print("Contenedor de PostgreSQL no está corriendo")
 
 # Getters
 
