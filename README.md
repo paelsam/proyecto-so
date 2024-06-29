@@ -15,7 +15,6 @@ El proyecto se desarrolla en python y se utiliza la librería PySimpleGUI para l
 - psycopg2 ```pip install psycopg2```
 - docker ```pip install docker```
 
-
 ## Pasos para ejecutar el proyecto
 
 1. Clonar el repositorio
@@ -27,14 +26,35 @@ git clone git@github.com:paelsam/proyecto-so.git
 ```bash
 cd proyecto-so
 ```
+3. Abrir una terminal dentro de la carpeta del proyecto
 
-4. Abrir una terminal dentro de la carpeta del proyecto
-
-3. Crear la imagen de la aplicación y ejecutar el contenedor
+4. Crear la imagen de la aplicación y ejecutar el contenedor
 ```bash
 docker build -t database . # Construir la imagen de la base de datos
 docker run --name database_container -d -p 5432:5432 database # Crear el contenedor de la base de datos
 ```
+
+5. Crear entorno virtual de python
+```bash
+python -m venv venv
+```
+
+6. Activar el entorno virtual
+```bash
+source venv/bin/activate
+```
+
+7. Ejecutar el archivo app.py por si quieres probar los algoritmos de planificación
+```bash 
+python app.py
+```
+
+O bien, ejecutar el archivo gui.py por si quieres probar la GUI
+```bash 
+python gui.py
+```
+
+
 
 
 
