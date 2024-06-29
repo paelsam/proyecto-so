@@ -24,10 +24,21 @@ def create_container(container_name: str, command: str, image: str = 'alpine') -
 
 def start_container(container_name: str):
     container = client.containers.get(container_name)
-    container.start()
+    if container.status == 'paused':
+        container.unpause()
+    else: 
+        container.start()
     return container
 
 def stop_container(container_name: str):
     container = client.containers.get(container_name)
     container.stop()
+    return container
+
+def pause_container(container_name: str):
+    container = client.containers.get(container_name)
+    if container.status == 'running':
+        container.pause()
+    else:
+        print(f"El contenedor {container_name} no está en ejecución y no se puede pausar.")
     return container

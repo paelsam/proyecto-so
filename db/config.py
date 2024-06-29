@@ -244,7 +244,9 @@ def intert_turnaround_time_and_response_time(tiempos: list):
             for tiempo in tiempos:
                 cur.execute("""
                     UPDATE registro_tiempo
-                    SET turnaround_time = %s, response_time = %s
+                    SET 
+                        turnaround_time = %s, 
+                        response_time = %s
                     WHERE registro_tiempo_id = %s
                 """, (tiempo[1], tiempo[2], tiempo[0]))
             conn.commit()
