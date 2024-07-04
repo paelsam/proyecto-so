@@ -11,7 +11,7 @@ def is_container_exist(container_name):
     
 def create_container(container_name: str, command: str, image: str = 'alpine') -> docker.models.containers.Container:
     if is_container_exist(container_name):
-        print("El contenedor ya existe")
+        # print("El contenedor ya existe")
         return False
     else:
         container = client.containers.create(
@@ -40,5 +40,12 @@ def pause_container(container_name: str):
     if container.status == 'running':
         container.pause()
     else:
-        print(f"El contenedor {container_name} no está en ejecución y no se puede pausar.")
+        pass
+        # print(f"El contenedor {container_name} no está en ejecución y no se puede pausar.")
     return container
+
+def remove_container(container_name: str):
+    if is_container_exist(container_name):
+        container = client.containers.get(container_name)
+        container.remove()
+        return container
