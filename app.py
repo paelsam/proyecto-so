@@ -9,12 +9,11 @@ from docker_methods.init import (
 )
 from db.config import (
     get_comandos,
-    get_historial_ejecuciones,
     insert_comando,
     comando_existe,
     get_comando,
     insert_comando_existente,
-    intert_turnaround_time_and_response_time,
+    insert_turnaround_time_and_response_time,
 )
 
 
@@ -62,7 +61,7 @@ historial_comandos = get_comandos()
         4: turnaround_time
         5: response_time
 """
-historial_ejecuciones = get_historial_ejecuciones()
+# historial_ejecuciones = get_historial_ejecuciones()
 
 
 # Insertar un comando en la base de datos y crear el contenedor
@@ -109,7 +108,7 @@ def fcfs(comandos: list):
     # tripla con (registro_tiempo_id, turnaround_time, response_time)
     tiempos = []
 
-    for comando in comandos:
+    for i, comando in enumerate(comandos):
         ( comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id ) = comando
 
         if tiempo_actual < tiempo_inicio:
@@ -119,7 +118,6 @@ def fcfs(comandos: list):
         # Response time
         response_time = tiempo_actual - tiempo_inicio
 
-        print(f"Comando {comando_id}: {comando_str}")
 
         start_container(contenedor)
 
@@ -133,10 +131,12 @@ def fcfs(comandos: list):
         turnaround_time = tiempo_actual - tiempo_inicio
         tiempos.append((registro_tiempo_id, turnaround_time, response_time))
 
+        print(f"Comando {i + 1}: {comando_str}")
         print(f"Turnaround time: {turnaround_time}")
         print(f"Response time: {response_time}")
+        print("\n")
 
-    intert_turnaround_time_and_response_time(tiempos)
+    insert_turnaround_time_and_response_time(tiempos)
 
     avg_turnaround_time = sum(
         [turnaround_time[1] for turnaround_time in tiempos]
@@ -144,9 +144,6 @@ def fcfs(comandos: list):
     avg_response_time = sum([response_time[2] for response_time in tiempos]) / len(
         [response_time[2] for response_time in tiempos]
     )
-
-    print(f"Turnaround time promedio: {avg_turnaround_time}")
-    print(f"Response time promedio: {avg_response_time}")
 
     return avg_turnaround_time, avg_response_time
 
@@ -196,8 +193,6 @@ def round_robin(comandos: list, quantum: int = 2):
             time.sleep(tiempo_inicio - tiempo_actual)
             tiempo_actual = tiempo_inicio
 
-        print(f"Comando {comando_id}: {comando_str}")
-
         start_container(contenedor)
 
         if tiempo_ejecutado + quantum >= tiempo_fin:
@@ -213,8 +208,10 @@ def round_robin(comandos: list, quantum: int = 2):
 
             tiempos.append([registro_tiempo_id, turnaround_time, response_time])
 
+            print(f"Comando {comando_id}: {comando_str}")
             print(f"Turnaround time: {turnaround_time}")
             print(f"Response time: {response_time}")
+            print("\n")
         else:
             time.sleep(quantum)
             pause_container(contenedor)
@@ -222,7 +219,7 @@ def round_robin(comandos: list, quantum: int = 2):
             comando[6] = tiempo_ejecutado + quantum
             cola.append(comando)        
 
-    intert_turnaround_time_and_response_time(tiempos)
+    insert_turnaround_time_and_response_time(tiempos)
 
     # Añadir el turnaround time y response time promedio a la base de datos
     avg_turnaround_time = sum(
@@ -232,9 +229,6 @@ def round_robin(comandos: list, quantum: int = 2):
         [response_time[2] for response_time in tiempos]
     )
 
-    print(f"Turnaround time promedio: {avg_turnaround_time}")
-    print(f"Response time promedio: {avg_response_time}")
-
     return avg_turnaround_time, avg_response_time
 
 # Algoritmo de planificacion SPN (Shortest Process Next)
@@ -243,9 +237,9 @@ def spn(comandos: list):
     tiempo_actual = 0
     tiempos = []
 
-    for comando in comandos:
+    for i, comando in enumerate(comandos):
         (
-            comando_id,
+            _,
             comando_str,
             contenedor,
             tiempo_inicio,
@@ -260,8 +254,6 @@ def spn(comandos: list):
         # Response time
         response_time = tiempo_actual - tiempo_inicio
 
-        print(f"Comando {comando_id}: {comando_str}")
-
         start_container(contenedor)
 
         time.sleep(tiempo_fin)
@@ -274,10 +266,12 @@ def spn(comandos: list):
         turnaround_time = tiempo_actual - tiempo_inicio
         tiempos.append((registro_tiempo_id, turnaround_time, response_time))
 
+        print(f"Comando {i + 1}: {comando_str}")
         print(f"Turnaround time: {turnaround_time}")
         print(f"Response time: {response_time}")
+        print("\n")
 
-    intert_turnaround_time_and_response_time(tiempos)
+    insert_turnaround_time_and_response_time(tiempos)
 
     avg_turnaround_time = sum(
         [turnaround_time[1] for turnaround_time in tiempos]
@@ -285,9 +279,6 @@ def spn(comandos: list):
     avg_response_time = sum([response_time[2] for response_time in tiempos]) / len(
         [response_time[2] for response_time in tiempos]
     )
-
-    print(f"Turnaround time promedio: {avg_turnaround_time}")
-    print(f"Response time promedio: {avg_response_time}")
 
     return avg_turnaround_time, avg_response_time
 
@@ -316,9 +307,7 @@ def srt(comandos: list):
         comando = cola[0]
         
         comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id, tiempo_ejecutado = comando
-        
-        print(f"Comando {comando_id}: {comando_str}")
-        
+                
         start_container(contenedor)
         
         # Calculamos cuánto tiempo ejecutar
@@ -338,20 +327,19 @@ def srt(comandos: list):
             
             tiempos.append((registro_tiempo_id, turnaround_time, response_time))
             
+            print(f"Comando {comando_id}: {comando_str}")
             print(f"Turnaround time: {turnaround_time}")
             print(f"Response time: {response_time}")
+            print("\n")
             
             cola.pop(0)
         else:
             pause_container(contenedor)
     
-    intert_turnaround_time_and_response_time(tiempos)
+    insert_turnaround_time_and_response_time(tiempos)
     
     avg_turnaround_time = sum(t[1] for t in tiempos) / len(tiempos)
     avg_response_time = sum(t[2] for t in tiempos) / len(tiempos)
-    
-    print(f"Turnaround time promedio: {avg_turnaround_time}")
-    print(f"Response time promedio: {avg_response_time}")
     
     return avg_turnaround_time, avg_response_time
 
@@ -391,9 +379,7 @@ def hrrn(comandos: list):
         comando = cola.pop(0)
         
         comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id, _ = comando
-        
-        print(f"Comando {comando_id}: {comando_str}")
-        
+                
         start_container(contenedor)
         
         tiempo_ejecucion = tiempo_fin
@@ -407,27 +393,14 @@ def hrrn(comandos: list):
         
         tiempos.append((registro_tiempo_id, turnaround_time, response_time))
         
+        print(f"Comando {i + 1}: {comando_str}")
         print(f"Turnaround time: {turnaround_time}")
         print(f"Response time: {response_time}")
+        print("\n")
     
-    intert_turnaround_time_and_response_time(tiempos)
+    insert_turnaround_time_and_response_time(tiempos)
     
     avg_turnaround_time = sum(t[1] for t in tiempos) / len(tiempos)
     avg_response_time = sum(t[2] for t in tiempos) / len(tiempos)
     
-    print(f"Turnaround time promedio: {avg_turnaround_time}")
-    print(f"Response time promedio: {avg_response_time}")
-    
     return avg_turnaround_time, avg_response_time
-
-# Comandos de prueba
-insertar_comando("ps ef", 0, 1)
-insertar_comando("sleep 5", 5, 5)
-insertar_comando("ls -l", 5, 1)
-
-# print(fcfs(comandos_a_ejecutar))
-# print(round_robin(comandos_a_ejecutar, 2))
-# print(spn(comandos_a_ejecutar))
-# print(srt(comandos_a_ejecutar))
-print(hrrn(comandos_a_ejecutar))
-
