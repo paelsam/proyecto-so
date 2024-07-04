@@ -44,12 +44,7 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-7. Ejecutar el archivo app.py por si quieres probar los algoritmos de planificación
-```bash 
-python app.py
-```
-
-O bien, ejecutar el archivo gui.py por si quieres probar la GUI
+7. Ejecutar el archivo gui.py para probar la GUI
 ```bash 
 python gui.py
 ```
