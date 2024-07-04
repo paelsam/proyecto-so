@@ -142,7 +142,11 @@ def get_comandos_por_ejecucion(ejecucion_id):
                 c.comando,
                 con.contenedor,
                 rt.tiempo_inicio,
-                rt.tiempo_fin
+                rt.tiempo_fin,
+                rt.turnaround_time,
+                rt.response_time,
+                e.turnaround_time_promedio,
+                e.response_time_promedio
             FROM
                 comando_ejecucion ce
             JOIN
@@ -151,12 +155,61 @@ def get_comandos_por_ejecucion(ejecucion_id):
                 comando c ON rt.comando_id = c.comando_id
             JOIN
                 contenedor con ON c.contenedor_id = con.contenedor_id
+            JOIN
+                ejecucion e ON ce.ejecucion_id = e.ejecucion_id
             WHERE
                 ce.ejecucion_id = %s
         """,
             (ejecucion_id,),
         )
         response = cur.fetchall()
+        cur.close()
+        return response
+
+def contenedor_existe(contenedor: str) -> bool:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT
+                contenedor_id
+            FROM
+                contenedor
+            WHERE
+                contenedor = %s
+        """,
+            (contenedor,),
+        )
+        response = cur.fetchone()
+        cur.close()
+        return response is not None
+
+def get_contenedor(contenedor: str) -> tuple:
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                contenedor_id,
+                contenedor
+            FROM
+                contenedor
+            WHERE
+                contenedor = %s
+        """, (contenedor,))
+        response = cur.fetchone()
+        cur.close()
+        return response
+
+def get_average_turnaround_time_and_response_time(ejecucion_id):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                e.turnaround_time_promedio,
+                e.response_time_promedio
+            FROM
+                ejecucion e
+            WHERE
+                e.ejecucion_id = %s
+        """, (ejecucion_id,))
+        response = cur.fetchone()
         cur.close()
         return response
 
@@ -167,16 +220,21 @@ def get_comandos_por_ejecucion(ejecucion_id):
 def insert_comando(comando, contenedor, tiempo_inicio, tiempo_fin):
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO contenedor (contenedor)
-                VALUES (%s)
-                RETURNING contenedor_id;
-            """,
-                (contenedor,),
-            )
 
-            contenedor_id = cur.fetchone()[0]
+            
+            if contenedor_existe(contenedor):
+                contenedor_id = get_contenedor(contenedor)[0]
+            else:
+                cur.execute(
+                    """
+                    INSERT INTO contenedor (contenedor)
+                    VALUES (%s)
+                    RETURNING contenedor_id;
+                """,
+                    (contenedor,),
+                )
+                contenedor_id = cur.fetchone()[0]
+                
 
             cur.execute(
                 """
@@ -240,7 +298,7 @@ def insert_comando_existente(comando: str, tiempo_inicio: int, tiempo_fin: int):
             cur.close()
             
 
-def intert_turnaround_time_and_response_time(tiempos: list):
+def insert_turnaround_time_and_response_time(tiempos: list):
     try:
         with conn.cursor() as cur:
             for tiempo in tiempos:
@@ -288,15 +346,11 @@ def insert_comandos_ejecucion(
             ejecucion_id = cur.fetchone()[0]
 
             for comando in lista_comandos:
-                (comando_id, contenedor_id, registro_tiempo_id) = insert_comando(
-                    comando[0], comando[1], comando[2], comando[3]
-                )
-
                 cur.execute("""
                     INSERT INTO comando_ejecucion (ejecucion_id, registro_tiempo_id)
                     VALUES (%s, %s)
                 """,
-                    (ejecucion_id, registro_tiempo_id),
+                    (ejecucion_id, comando[5]),
                 )
             conn.commit()
             return ejecucion_id
