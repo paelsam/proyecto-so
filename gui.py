@@ -149,9 +149,9 @@ while True:
                         insertar_comando(c[2], c[4], c[5])
                     comandos_agregados = [(c[2], c[4], c[5]) for c in comandos]
                     window['-LISTA_COMANDOS-'].update(values=[f"{cmd} (Inicio: {ti}s, Estimado: {te}s)" for cmd, ti, te in comandos_agregados])
-                    print("Comandos cargados para reejecutar. Seleccione un algoritmo y presione 'Ejecutar'.")
                     # Limpiar el output anterior
                     window['-RESULTADOS-'].update(value='')
+                    print("Comandos cargados para reejecutar. Seleccione un algoritmo y presione 'Ejecutar'.")
                     window_historial.close()
         window_historial.close()
 
