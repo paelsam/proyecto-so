@@ -150,13 +150,13 @@ def fcfs(comandos: list):
 
 # Algoritmo de planificacion Round Robin
 def round_robin(comandos: list, quantum: int = 2):
-    comandos = sorted(comandos, key=lambda x: x[3])
+    comandos_ordenados = sorted(comandos, key=lambda x: x[3])
 
     tiempo_actual = 0
     tiempos = []
     cola = []
 
-    for comando in comandos:
+    for comando in comandos_ordenados:
         (
             comando_id,
             comando_str,
@@ -233,11 +233,11 @@ def round_robin(comandos: list, quantum: int = 2):
 
 # Algoritmo de planificacion SPN (Shortest Process Next)
 def spn(comandos: list):
-    comandos = sorted(comandos, key=lambda x: x[4]) # Ordenar en base al tiempo_fin
+    comandos_ordenados = sorted(comandos, key=lambda x: x[4]) # Ordenar en base al tiempo_fin
     tiempo_actual = 0
     tiempos = []
 
-    for i, comando in enumerate(comandos):
+    for i, comando in enumerate(comandos_ordenados):
         (
             _,
             comando_str,
@@ -339,7 +339,7 @@ def srt(comandos: list):
     insert_turnaround_time_and_response_time(tiempos)
     
     avg_turnaround_time = sum(t[1] for t in tiempos) / len(tiempos)
-    avg_response_time = sum(t[2] for t in tiempos) / len(tiempos)
+    avg_response_time = sum(r[2] for r in tiempos) / len(tiempos)
     
     return avg_turnaround_time, avg_response_time
 
@@ -350,17 +350,17 @@ def hrrn(comandos: list):
     cola = []
     
     # Ordenamos los comandos por tiempo de inicio
-    comandos = sorted(comandos, key=lambda x: x[3])
+    comandos_ordenados = sorted(comandos, key=lambda x: x[3])
     
-    while comandos or cola:
+    while comandos_ordenados or cola:
         # Agregamos a la cola los comandos que ya pueden comenzar
-        while comandos and comandos[0][3] <= tiempo_actual:
-            comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id = comandos.pop(0)
+        while comandos_ordenados and comandos_ordenados[0][3] <= tiempo_actual:
+            comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id = comandos_ordenados.pop(0)
             cola.append([comando_id, comando_str, contenedor, tiempo_inicio, tiempo_fin, registro_tiempo_id])
         
         if not cola:
             # Si no hay comandos en la cola, avanzamos el tiempo
-            tiempo_actual = comandos[0][3]
+            tiempo_actual = comandos_ordenados[0][3]
             continue
         
         # Calculamos el response ratio para cada comando en la cola
@@ -389,7 +389,7 @@ def hrrn(comandos: list):
         stop_container(contenedor)
         
         turnaround_time = tiempo_actual - tiempo_inicio
-        response_time = turnaround_time - tiempo_fin
+        response_time = turnaround_time - tiempo_ejecucion
         
         tiempos.append((registro_tiempo_id, turnaround_time, response_time))
         
@@ -401,6 +401,6 @@ def hrrn(comandos: list):
     insert_turnaround_time_and_response_time(tiempos)
     
     avg_turnaround_time = sum(t[1] for t in tiempos) / len(tiempos)
-    avg_response_time = sum(t[2] for t in tiempos) / len(tiempos)
+    avg_response_time = sum(r[2] for r in tiempos) / len(tiempos)
     
     return avg_turnaround_time, avg_response_time

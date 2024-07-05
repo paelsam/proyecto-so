@@ -77,20 +77,19 @@ while True:
         # Limpiar el output anterior
         window['-RESULTADOS-'].update(value='')
         algoritmo = values['-ALGORITMO-'].strip()
-        avg_turnaround, avg_response = None, None
         if algoritmo and comandos_a_ejecutar:
-            print(f"Ejecutando con algoritmo: {algoritmo}")
+            print(f"Ejecutando algoritmo de planificación {algoritmo}...\n")
             print("Espere, por favor...\n")
             
-            if "FCFS" in algoritmo:
+            if "(FCFS)" in algoritmo:
                 avg_turnaround, avg_response = fcfs(comandos_a_ejecutar)
-            elif "RR" in algoritmo:
+            elif "(RR)" in algoritmo:
                 avg_turnaround, avg_response = round_robin(comandos_a_ejecutar, 2)
-            elif "SPN" in algoritmo:
+            elif "(SPN)" in algoritmo:
                 avg_turnaround, avg_response = spn(comandos_a_ejecutar)
-            elif "SRT" in algoritmo:
+            elif "(SRT)" in algoritmo:
                 avg_turnaround, avg_response = srt(comandos_a_ejecutar)
-            elif "HRRN" in algoritmo:
+            elif "(HRRN)" in algoritmo:
                 avg_turnaround, avg_response = hrrn(comandos_a_ejecutar)
             
             insert_comandos_ejecucion(comandos_a_ejecutar, algoritmo, datetime.datetime.now(), avg_turnaround, avg_response)
