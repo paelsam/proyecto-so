@@ -28,16 +28,6 @@ from db.config import (
 """
 comandos_a_ejecutar = []
 
-# Registro de la ejecucion actual
-"""
-    Ejecucion
-    0: algoritmo_planificacion
-    1: fecha_ejecucion
-    2: turnaround_time_promedio
-    3: response_time_promedio
-"""
-ejecucion = ()
-
 """
     Obtener historial de comandos
     0: comando_id
